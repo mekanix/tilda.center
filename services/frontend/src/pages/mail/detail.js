@@ -11,6 +11,7 @@ import {
   Refresh,
 } from '@material-ui/icons'
 import { withStore } from 'freenit'
+import { Strophe } from 'strophe.js'
 import { errors } from 'utils'
 import Template from 'templates/default/detail'
 import {
@@ -24,20 +25,22 @@ import {
 class Mail extends React.Component {
   state = {
     compose: false,
+    ws: new Strophe.Connection('wss://jabber.tilda.center:5443/ws'),
   }
 
   constructor(props) {
     super(props)
-    this.fetch()
+    this.init()
   }
 
-  fetch = async () => {
+  init = async () => {
     const { mail, notification } = this.props.store
     const response = await mail.select('INBOX')
     if (!response.ok) {
       const error = errors(response)
       notification.show(`Error fetching INBOX messages: ${error.message}`)
     }
+    this.state.ws.connect('email', 'pass')
   }
 
   openCompose = () => {
